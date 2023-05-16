@@ -701,6 +701,8 @@ AIX Support
 
 WebAssembly Support
 ^^^^^^^^^^^^^^^^^^^
+- The `wasm32-wasi` target now supports `Emscripten-style shared libraries
+  <https://github.com/WebAssembly/tool-conventions/blob/main/DynamicLinking.md>`_.
 
 AVR Support
 ^^^^^^^^^^^

@@ -33,6 +33,13 @@
 // LINK_KNOWN: "-cc1" {{.*}} "-o" "[[temp:[^"]*]]"
 // LINK_KNOWN: wasm-ld{{.*}}" "-L/foo/lib/wasm32-wasi" "crt1.o" "[[temp]]" "-lc" "{{.*[/\\]}}libclang_rt.builtins-wasm32.a" "-o" "a.out"
 
+// -shared should be passed through to `wasm-ld` and not include crt1.o
+
+// RUN: %clang -### -shared --target=wasm32-wasi --sysroot=/foo %s 2>&1 \
+// RUN:   | FileCheck -check-prefix=LINK_KNOWN_SHARED %s
+// LINK_KNOWN_SHARED: "-cc1" {{.*}} "-o" "[[temp:[^"]*]]"
+// LINK_KNOWN_SHARED: wasm-ld{{.*}}" "-L/foo/lib/wasm32-wasi" "-shared" "[[temp]]" "-lc" "{{.*[/\\]}}libclang_rt.builtins-wasm32.a" "-o" "a.out"
+
 // A basic C link command-line with optimization with known OS.
 
 // RUN: %clang -### -O2 --target=wasm32-wasi --sysroot=/foo %s 2>&1 \
@@ -45,6 +52,12 @@
 // RUN: %clang -### --target=wasm32-wasi --sysroot=/foo %s 2>&1 \
 // RUN:   | FileCheck -check-prefix=COMPILE %s
 // COMPILE: "-cc1" {{.*}} "-internal-isystem" "/foo/include/wasm32-wasi" "-internal-isystem" "/foo/include"
+
+// -fPIC should work for WASI
+
+// RUN: %clang -### -fPIC --target=wasm32-wasi --sysroot=/foo %s 2>&1 \
+// RUN:   | FileCheck -check-prefix=COMPILE_PIC %s
+// COMPILE_PIC: "-cc1" {{.*}} "-mrelocation-model" "pic" "-pic-level" "2" {{.*}} "-internal-isystem" "/foo/include/wasm32-wasi" "-internal-isystem" "/foo/include"
 
 // Thread-related command line tests.
 
