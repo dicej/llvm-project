@@ -31,7 +31,9 @@
 #else
 # include <dirent.h>
 # include <sys/stat.h>
+#ifndef __wasi__
 # include <sys/statvfs.h>
+#endif
 # include <unistd.h>
 #endif
 #include <time.h>
@@ -78,6 +80,7 @@ path __absolute(const path& p, error_code* ec) {
   return __do_absolute(p, &cwd, ec);
 }
 
+#ifndef __wasi__
 path __canonical(path const& orig_p, error_code* ec) {
   path cwd;
   ErrorHandler<path> err("canonical", ec, &orig_p, &cwd);
@@ -101,6 +104,7 @@ path __canonical(path const& orig_p, error_code* ec) {
   return {ret};
 #endif
 }
+#endif
 
 void __copy(const path& from, const path& to, copy_options options,
             error_code* ec) {
@@ -343,9 +347,11 @@ bool __copy_file(const path& from, const path& to, copy_options options,
     if (!detail::stat_equivalent(to_stat_path, to_fd.get_stat()))
       return err.report(errc::bad_file_descriptor);
 
+#ifndef __wasi__
     // Set the permissions and truncate the file we opened.
     if (detail::posix_fchmod(to_fd, from_stat, m_ec))
       return err.report(m_ec);
+#endif
     if (detail::posix_ftruncate(to_fd, 0, m_ec))
       return err.report(m_ec);
   }
@@ -619,6 +625,7 @@ void __last_write_time(const path& p, file_time_type new_time, error_code* ec) {
 #endif
 }
 
+#ifndef __wasi__
 void __permissions(const path& p, perms prms, perm_options opts,
                    error_code* ec) {
   ErrorHandler<void> err("permissions", ec, &p);
@@ -663,6 +670,7 @@ void __permissions(const path& p, perms prms, perm_options opts,
   }
 #endif
 }
+#endif
 
 path __read_symlink(const path& p, error_code* ec) {
   ErrorHandler<path> err("read_symlink", ec, &p);
@@ -862,6 +870,7 @@ void __resize_file(const path& p, uintmax_t size, error_code* ec) {
     return err.report(capture_errno());
 }
 
+#ifndef __wasi__
 space_info __space(const path& p, error_code* ec) {
   ErrorHandler<void> err("space", ec, &p);
   space_info si;
@@ -882,6 +891,7 @@ space_info __space(const path& p, error_code* ec) {
   do_mult(si.available, m_svfs.f_bavail);
   return si;
 }
+#endif
 
 file_status __status(const path& p, error_code* ec) {
   return detail::posix_stat(p, ec);

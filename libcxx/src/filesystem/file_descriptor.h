@@ -28,7 +28,9 @@
 # include <dirent.h>   // for DIR & friends
 # include <fcntl.h>    // values for fchmodat
 # include <sys/stat.h>
+#ifndef __wasi__
 # include <sys/statvfs.h>
+#endif
 # include <unistd.h>
 #endif // defined(_LIBCPP_WIN32API)
 
@@ -54,8 +56,10 @@ file_type get_file_type(DirEntT* ent, int) {
     return file_type::symlink;
   case DT_REG:
     return file_type::regular;
+#ifndef __wasi__
   case DT_SOCK:
     return file_type::socket;
+#endif
   // Unlike in lstat, hitting "unknown" here simply means that the underlying
   // filesystem doesn't support d_type. Report is as 'none' so we correctly
   // set the cache to empty.
@@ -267,6 +271,7 @@ inline bool posix_ftruncate(const FileDescriptor& fd, off_t to_size, error_code&
   return false;
 }
 
+#ifndef __wasi__
 inline bool posix_fchmod(const FileDescriptor& fd, const StatT& st, error_code& ec) {
   if (detail::fchmod(fd.fd, st.st_mode) == -1) {
     ec = capture_errno();
@@ -275,6 +280,7 @@ inline bool posix_fchmod(const FileDescriptor& fd, const StatT& st, error_code& 
   ec.clear();
   return false;
 }
+#endif
 
 inline bool stat_equivalent(const StatT& st1, const StatT& st2) {
   return (st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino);

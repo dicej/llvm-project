@@ -40,7 +40,9 @@
 # include <fcntl.h>
 # include <unistd.h>
 # include <sys/stat.h>
+#ifndef __wasi__
 # include <sys/statvfs.h>
+#endif
 # include <sys/time.h>
 #endif
 #include <stdlib.h>
@@ -481,9 +483,11 @@ inline int symlink_dir(const char *oldname, const char *newname) {
   return ::symlink(oldname, newname);
 }
 using ::chdir;
+#ifndef __wasi__
 using ::fchmod;
 #if defined(AT_SYMLINK_NOFOLLOW) && defined(AT_FDCWD)
 using ::fchmodat;
+#endif
 #endif
 using ::fstat;
 using ::ftruncate;
@@ -492,11 +496,15 @@ using ::link;
 using ::lstat;
 using ::mkdir;
 using ::readlink;
+#ifndef __wasi__
 using ::realpath;
+#endif
 using ::remove;
 using ::rename;
 using ::stat;
+#ifndef __wasi__
 using ::statvfs;
+#endif
 using ::truncate;
 
 #define O_BINARY 0
